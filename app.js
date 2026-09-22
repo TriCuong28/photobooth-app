@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         poseHintText: document.getElementById('pose-hint-text'),
         thumbnailsList: document.getElementById('thumbnails-list'),
         cancelCaptureBtn: document.getElementById('cancel-capture-btn'),
+        backHomeBtn: document.getElementById('back-home-btn'),
         downloadGifBtn: document.getElementById('download-gif-btn'),
 
         // Selection Screen Controls
@@ -658,17 +659,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    if (elements.cancelCaptureBtn) {
-        elements.cancelCaptureBtn.addEventListener('click', () => {
-            state.isCapturing = false;
-            if (currentCountdownTimer) {
-                clearInterval(currentCountdownTimer);
-                currentCountdownTimer = null;
-            }
+    function abortCurrentCaptureSession() {
+        state.isCapturing = false;
+        if (currentCountdownTimer) {
+            clearInterval(currentCountdownTimer);
+            currentCountdownTimer = null;
+        }
+        if (currentCountdownResolver) {
+            const resolve = currentCountdownResolver;
             currentCountdownResolver = null;
+            resolve(); // Unblock async promise so runCaptureLoop terminates cleanly
+        }
+        if (elements.countdownOverlay) {
             elements.countdownOverlay.classList.add('hidden');
             elements.countdownOverlay.style.display = 'none';
-            stopWebcamStream();
+        }
+    }
+
+    async function resetAndRestartCapture() {
+        abortCurrentCaptureSession();
+
+        // Give a short tick for previous capture loop to exit
+        await new Promise(r => setTimeout(r, 150));
+
+        // Reset all photo captures state
+        state.capturedImages = [];
+        state.selectedPhotoIndices = [];
+        state.chosenImages = [];
+        state.currentShotIndex = 0;
+        state.isCapturing = true;
+
+        renderThumbnailsSidebar();
+
+        if (elements.webcam && state.stream) {
+            elements.webcam.play().catch(() => {});
+        }
+
+        // Restart capture sequence from Shot 1/8!
+        runCaptureLoop();
+    }
+
+    if (elements.cancelCaptureBtn) {
+        elements.cancelCaptureBtn.addEventListener('click', () => {
+            playSound('pop');
+            resetAndRestartCapture();
+        });
+    }
+
+    if (elements.backHomeBtn) {
+        elements.backHomeBtn.addEventListener('click', () => {
+            playSound('pop');
+            abortCurrentCaptureSession();
+            state.capturedImages = [];
+            state.selectedPhotoIndices = [];
+            state.chosenImages = [];
+            state.currentShotIndex = 0;
             switchScreen(elements.screenWelcome);
         });
     }
