@@ -1,5 +1,5 @@
 /**
- * K-PHOTOBOOTH STUDIO ENGINE (8-SHOT CAPTURE & PHOTO SELECTION VERSION 4.0)
+ * BOMI FOTO STUDIO ENGINE (8-SHOT CAPTURE & PHOTO SELECTION VERSION 4.0)
  * Automated 8-Shot Capture, Interactive Photo Selection Step, Canvas Compositing & Export
  */
 
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generatedGifDataUrl: null,
         frameBgColor: '#ffffff',
         framePadding: 20,
-        frameTitle: 'K-PHOTOBOOTH MEMORY',
+        frameTitle: 'BOMI FOTO MEMORY',
         frameDate: new Date().toLocaleDateString('vi-VN'),
         textColor: '#111111',
 

@@ -100,7 +100,7 @@ app.get('/api/info', (req, res) => {
 // Upload Photo (Supabase + Local Backup)
 app.post('/api/upload', async (req, res) => {
     try {
-        const { image, gifImage, layoutType = 'strip', frameTitle = 'K-PHOTOBOOTH', deviceSessionId = 'default_device' } = req.body;
+        const { image, gifImage, layoutType = 'strip', frameTitle = 'Bomi Foto', deviceSessionId = 'default_device' } = req.body;
 
         if (!image) {
             return res.status(400).json({ success: false, error: 'Thiếu dữ liệu hình ảnh (Base64 required)' });

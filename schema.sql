@@ -1,5 +1,5 @@
 -- ==========================================================================
--- K-PHOTOBOOTH STUDIO SUPABASE DATABASE & STORAGE SCHEMA MIGRATION
+-- BOMI FOTO STUDIO SUPABASE DATABASE & STORAGE SCHEMA MIGRATION
 -- Copy and paste this script into your Supabase Dashboard -> SQL Editor -> Run
 -- ==========================================================================
 
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.photos (
     image_url TEXT NOT NULL,
     gif_url TEXT,
     layout_type VARCHAR DEFAULT 'strip',
-    frame_title VARCHAR DEFAULT 'K-PHOTOBOOTH',
+    frame_title VARCHAR DEFAULT 'Bomi Foto',
     size_bytes BIGINT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -20,7 +20,7 @@ const SERVER_IP = getLocalIpAddress();
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`
 ===================================================================
-🚀 K-PHOTOBOOTH STUDIO BACKEND SERVER STARTED
+🚀 BOMI FOTO STUDIO BACKEND SERVER STARTED
 ===================================================================
 💻 Local URL    : http://localhost:${PORT}
 📱 Network LAN : http://${SERVER_IP}:${PORT} (Mobile QR scanning)
