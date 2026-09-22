@@ -24,7 +24,7 @@
     padding: 0;
     user-select: none;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 94, 151, 0.4) rgba(15, 16, 21, 0.5);
+    scrollbar-color: #ff5e97 #0f1015;
 }
 
 /* Custom Sleek Dark Glassmorphism Scrollbars */
@@ -34,25 +34,29 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(15, 16, 21, 0.4);
+    background: rgba(15, 16, 21, 0.6);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(255, 94, 151, 0.45), rgba(168, 85, 247, 0.45));
+    background: linear-gradient(180deg, #ff5e97 0%, #a855f7 100%);
     border-radius: 10px;
-    transition: all 0.25s ease;
+    box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.2);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #ff5e97, #a855f7);
+    background: linear-gradient(180deg, #ff7bb0 0%, #c084fc 100%);
     box-shadow: 0 0 10px rgba(255, 94, 151, 0.8);
 }
 
 ::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 body {
@@ -944,9 +948,6 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    max-height: 340px;
-    overflow-y: auto;
-    padding-right: 6px;
     padding-bottom: 4px;
 }
 
