@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         chosenImages: [], // Final images selected for canvas composition
         currentShotIndex: 0,
         isCapturing: false,
+        isMirrored: true, // Auto-detected based on front vs rear camera
+        userManualMirror: null, // null for auto, boolean for manual override
 
         // Editor State
         activeFilter: 'normal',
@@ -69,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Capture Controls
         webcam: document.getElementById('webcam'),
+        toggleMirrorBtn: document.getElementById('toggle-mirror-btn'),
         flashOverlay: document.getElementById('flash-overlay'),
         countdownOverlay: document.getElementById('countdown-overlay'),
         countdownNumber: document.getElementById('countdown-number'),
@@ -248,17 +251,57 @@ document.addEventListener('DOMContentLoaded', () => {
             const videoDevices = devices.filter(d => d.kind === 'videoinput');
 
             if (videoDevices.length > 0) {
-                elements.cameraSelect.innerHTML = videoDevices.map((d, i) => `
-                    <option value="${d.deviceId}" ${d.deviceId === state.selectedCameraId ? 'selected' : ''}>
-                        📷 ${d.label || `Camera ${i + 1}`}
-                    </option>
-                `).join('') + '<option value="virtual">📷 Camera Studio Mô Phỏng (Virtual)</option>';
+                elements.cameraSelect.innerHTML = videoDevices.map((d, i) => {
+                    const labelLower = (d.label || '').toLowerCase();
+                    const isRear = labelLower.includes('back') || labelLower.includes('rear') || labelLower.includes('environment') || labelLower.includes('sau');
+                    const icon = isRear ? '📷 Camera Sau' : '🤳 Camera Trước';
+                    return `
+                        <option value="${d.deviceId}" ${d.deviceId === state.selectedCameraId ? 'selected' : ''}>
+                            ${icon}: ${d.label || `Camera ${i + 1}`}
+                        </option>
+                    `;
+                }).join('') + '<option value="virtual">📷 Camera Studio Mô Phỏng (Virtual)</option>';
 
                 if (!state.selectedCameraId) {
                     state.selectedCameraId = videoDevices[0].deviceId;
                 }
             }
         } catch (e) {}
+    }
+
+    function updateMirrorMode() {
+        let isBackCamera = false;
+        if (state.stream) {
+            const track = state.stream.getVideoTracks()[0];
+            if (track) {
+                const settings = (track.getSettings && track.getSettings()) || {};
+                const label = (track.label || '').toLowerCase();
+                if (settings.facingMode === 'environment' || label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('sau')) {
+                    isBackCamera = true;
+                } else if (settings.facingMode === 'user' || label.includes('front') || label.includes('selfie') || label.includes('truedepth') || label.includes('trước')) {
+                    isBackCamera = false;
+                }
+            }
+        }
+
+        if (state.userManualMirror !== null) {
+            state.isMirrored = state.userManualMirror;
+        } else {
+            state.isMirrored = !isBackCamera; // Front camera -> Mirrored (true), Rear camera -> Unmirrored (false)
+        }
+
+        if (elements.webcam) {
+            if (state.isMirrored) {
+                elements.webcam.classList.add('mirror-mode');
+            } else {
+                elements.webcam.classList.remove('mirror-mode');
+            }
+        }
+
+        const mirrorBtnText = document.getElementById('mirror-btn-text');
+        if (mirrorBtnText) {
+            mirrorBtnText.textContent = state.isMirrored ? 'Lật Gương: Bật 🪞' : 'Lật Gương: Tắt 📷';
+        }
     }
 
     async function startWebcamStream() {
@@ -269,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             await initCameraDevices();
+            updateMirrorMode();
             return;
         }
 
@@ -289,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await elements.webcam.play().catch(() => {});
             }
             await initCameraDevices();
+            updateMirrorMode();
 
         } catch (err) {
             try {
@@ -299,10 +344,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     await elements.webcam.play().catch(() => {});
                 }
                 await initCameraDevices();
+                updateMirrorMode();
             } catch (e) {
                 if (elements.cameraSelect) {
                     elements.cameraSelect.innerHTML = '<option value="virtual">📷 Camera Studio Mô Phỏng (Virtual)</option>';
                 }
+                updateMirrorMode();
             }
         }
     }
@@ -312,8 +359,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.cameraSelect.addEventListener('change', (e) => {
         state.selectedCameraId = e.target.value;
+        state.userManualMirror = null; // reset to auto-detect on camera switch
         startWebcamStream();
     });
+
+    if (elements.toggleMirrorBtn) {
+        elements.toggleMirrorBtn.addEventListener('click', () => {
+            state.userManualMirror = !state.isMirrored;
+            updateMirrorMode();
+            playSound('pop');
+        });
+    }
 
     // ==========================================================================
     // 6. WELCOME SETUP & LAYOUT SELECTION
@@ -521,6 +577,11 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.width = Math.round(cropW);
             canvas.height = Math.round(cropH);
             const ctx = canvas.getContext('2d');
+
+            if (state.isMirrored) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
 
             ctx.drawImage(targetVideo, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
 

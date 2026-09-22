@@ -420,7 +420,37 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* Mirror camera */
+    transition: transform 0.2s ease;
+}
+
+#webcam.mirror-mode {
+    transform: scaleX(-1);
+}
+
+.mirror-toggle-badge {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 8;
+    background: rgba(15, 16, 21, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.mirror-toggle-badge:hover {
+    background: rgba(255, 94, 151, 0.3);
+    border-color: var(--accent-pink);
 }
 
 /* Shutter Flash Animation */
