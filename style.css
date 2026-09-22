@@ -686,8 +686,8 @@ body {
 
 .selection-body-container {
     display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 24px;
+    grid-template-columns: 320px 1fr;
+    gap: 28px;
     width: 100%;
     align-items: center;
 }
@@ -705,11 +705,12 @@ body {
 .selection-photos-side .selection-grid {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     max-height: 64vh;
     overflow-y: auto;
     padding: 4px;
+    padding-right: 8px;
 }
 
 .selection-preview-side {
