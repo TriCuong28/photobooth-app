@@ -5,6 +5,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Device Session Privacy Isolation (Anonymous Unique Device ID)
+    let deviceSessionId = localStorage.getItem('photobooth_device_session_id');
+    if (!deviceSessionId) {
+        deviceSessionId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('photobooth_device_session_id', deviceSessionId);
+    }
+
     // ==========================================================================
     // 1. STATE MANAGEMENT
     // ==========================================================================
@@ -1483,7 +1490,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     image: finalDataUrl,
                     gifImage: gifDataUrl,
                     layoutType: state.layoutType,
-                    frameTitle: state.frameTitle
+                    frameTitle: state.frameTitle,
+                    deviceSessionId: deviceSessionId
                 })
             });
 
@@ -1622,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.galleryGrid.innerHTML = '<div class="gallery-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>';
 
         try {
-            const res = await fetch('/api/photos');
+            const res = await fetch(`/api/photos?sessionId=${encodeURIComponent(deviceSessionId)}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.photos && data.photos.length > 0) {
@@ -1726,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/photos/delete-batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: Array.from(selectedGalleryPhotoIds) })
+                    body: JSON.stringify({ ids: Array.from(selectedGalleryPhotoIds), sessionId: deviceSessionId })
                 });
                 if (res.ok) {
                     playSound('pop');
@@ -1751,7 +1759,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/photos/delete-batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ all: true })
+                    body: JSON.stringify({ all: true, sessionId: deviceSessionId })
                 });
                 if (res.ok) {
                     playSound('pop');
