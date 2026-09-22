@@ -1442,8 +1442,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 gifshot.createGIF({
                     images: validList,
                     interval: 0.4,
-                    gifWidth: 480,
-                    gifHeight: 640,
+                    gifWidth: 320,
+                    gifHeight: 420,
                     numFrames: validList.length
                 }, function (obj) {
                     if (!obj.error) {
@@ -1462,10 +1462,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 12. FINALIZE, EXPORT & GALLERY MODAL
     // ==========================================================================
     elements.finishEditBtn.addEventListener('click', async () => {
-        const originalHtml = elements.finishEditBtn.innerHTML;
-        elements.finishEditBtn.disabled = true;
-        elements.finishEditBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG XUẤT ẢNH & TẠO GIF...';
-
         state.selectedStickerId = null;
         await renderPhotoboothCanvas();
 
@@ -1473,76 +1469,83 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.finalImagePreview.src = finalDataUrl;
         elements.printableImage.src = finalDataUrl;
 
-        // Generate Live Motion GIF
-        const gifList = state.chosenImages.length > 0 ? state.chosenImages : state.capturedImages;
-        const gifDataUrl = await createMotionGif(gifList);
-        state.generatedGifDataUrl = gifDataUrl;
+        // Instantly switch to Result screen without blocking user UI!
+        switchScreen(elements.screenResult);
 
-        let shareUrl = '';
-        let photoId = `photo_${Date.now()}`;
-        let uploadOk = false;
+        if (window.confetti) {
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        }
 
-        try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    image: finalDataUrl,
-                    gifImage: gifDataUrl,
-                    layoutType: state.layoutType,
-                    frameTitle: state.frameTitle,
-                    deviceSessionId: deviceSessionId
-                })
-            });
+        const photoId = `photo_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        let shareUrl = `${window.location.protocol}//${window.location.host}${basePath}view.html?id=${photoId}`;
 
-            if (res.ok) {
-                const data = await res.json();
-                if (data.success) {
-                    uploadOk = true;
-                    photoId = data.id;
-                    shareUrl = data.shareUrl;
+        if (elements.uploadStatusNotice) {
+            elements.uploadStatusNotice.style.color = '#eccc68';
+            elements.uploadStatusNotice.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tự động lưu ảnh HD & GIF...';
+        }
 
-                    if (elements.uploadStatusNotice) {
-                        elements.uploadStatusNotice.style.color = '#2ed573';
-                        elements.uploadStatusNotice.innerHTML = `<i class="fa-solid fa-cloud-check"></i> Đã lưu trữ trên server máy chủ: <strong>${data.shareUrl}</strong>`;
+        const renderQR = (url) => {
+            elements.qrcodeCanvas.innerHTML = '';
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(elements.qrcodeCanvas, {
+                    text: url,
+                    width: 180,
+                    height: 180,
+                    colorDark: '#0f1015',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } else {
+                elements.qrcodeCanvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}" alt="QR Code" style="border-radius: 12px; width: 180px; height: 180px;">`;
+            }
+        };
+
+        renderQR(shareUrl);
+
+        // Run GIF Creation & Server/Supabase Upload Asynchronously in Background
+        (async () => {
+            const gifList = state.chosenImages.length > 0 ? state.chosenImages : state.capturedImages;
+            const gifDataUrl = await createMotionGif(gifList);
+            state.generatedGifDataUrl = gifDataUrl;
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: finalDataUrl,
+                        gifImage: gifDataUrl,
+                        layoutType: state.layoutType,
+                        frameTitle: state.frameTitle,
+                        deviceSessionId: deviceSessionId
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.shareUrl) {
+                        shareUrl = data.shareUrl;
+                        renderQR(shareUrl);
+                        if (elements.uploadStatusNotice) {
+                            elements.uploadStatusNotice.style.color = '#2ed573';
+                            elements.uploadStatusNotice.innerHTML = `<i class="fa-solid fa-cloud-check"></i> Đã lưu trữ thành công trên Cloud Server!`;
+                        }
+                        return;
                     }
                 }
-            }
-        } catch (e) {}
+            } catch (e) {}
 
-        if (!uploadOk) {
             try {
                 localStorage.setItem('photobooth_photo_latest', finalDataUrl);
                 localStorage.setItem('photobooth_photo_' + photoId, finalDataUrl);
             } catch (e) {}
 
-            const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            shareUrl = `${window.location.protocol}//${window.location.host}${basePath}view.html?id=${photoId}`;
-
             if (elements.uploadStatusNotice) {
-                elements.uploadStatusNotice.style.color = '#eccc68';
-                elements.uploadStatusNotice.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Chế độ Offline (Lưu tại trình duyệt)';
+                elements.uploadStatusNotice.style.color = '#2ed573';
+                elements.uploadStatusNotice.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã hoàn tất xuất dải ảnh HD!';
             }
-        }
-
-        elements.qrcodeCanvas.innerHTML = '';
-        if (typeof QRCode !== 'undefined') {
-            new QRCode(elements.qrcodeCanvas, {
-                text: shareUrl,
-                width: 180,
-                height: 180,
-                colorDark: '#0f1015',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        } else {
-            elements.qrcodeCanvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}" alt="QR Code" style="border-radius: 12px; width: 180px; height: 180px;">`;
-        }
-
-        elements.finishEditBtn.disabled = false;
-        elements.finishEditBtn.innerHTML = originalHtml;
-
-        switchScreen(elements.screenResult);
+        })();
 
         if (window.confetti) {
             confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
