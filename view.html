@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobooth - Tải Ảnh Kỷ Niệm HD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0f1015;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 30%, rgba(255, 94, 151, 0.18), transparent 60%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(26, 28, 38, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px;
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: rgba(255, 94, 151, 0.15);
+            border: 1px solid rgba(255, 94, 151, 0.3);
+            border-radius: 20px;
+            color: #ff5e97;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #ff5e97, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .photo-card {
+            background: #000;
+            padding: 12px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-card img {
+            width: 100%;
+            max-height: 520px;
+            object-fit: contain;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .loading-spinner {
+            color: #ff5e97;
+            font-size: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .photo-meta {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff5e97, #a855f7);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(255, 94, 151, 0.4);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: none;
+            color: #cbd5e1;
+            font-size: 14px;
+            padding: 12px;
+        }
+
+        .error-msg {
+            color: #ff4757;
+            font-size: 14px;
+            padding: 20px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="badge"><i class="fa-solid fa-sparkles"></i> FOTO MEMORY</div>
+        <h1><i class="fa-solid fa-camera-retro"></i> Ảnh Kỷ Niệm Của Bạn</h1>
+        <p>Ảnh chất lượng cao đã sẵn sàng để tải về thiết bị!</p>
+
+        <div class="photo-card">
+            <div id="loading" class="loading-spinner">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <span>Đang tải ảnh từ server...</span>
+            </div>
+            <div id="error" class="error-msg">
+                <i class="fa-solid fa-triangle-exclamation fa-2x"></i><br><br>
+                <span>Không tìm thấy bức ảnh yêu cầu!</span>
+            </div>
+            <img id="photo-img" src="" alt="Photobooth Memory HD">
+        </div>
+
+        <div id="meta-container" class="photo-meta" style="display: none;">
+            <span><i class="fa-solid fa-clock"></i> <span id="photo-date">--</span></span>
+            <span><i class="fa-solid fa-file-image"></i> HD PNG</span>
+        </div>
+
+        <a id="download-link" href="#" download="Photobooth_Memory.png" class="btn">
+            <i class="fa-solid fa-download"></i> TẢI ẢNH PNG VỀ ĐIỆN THOẠI (HD)
+        </a>
+
+        <a id="download-gif-link" href="#" download="Photobooth_Motion.gif" class="btn"
+            style="background: linear-gradient(135deg, #a855f7, #6366f1); display: none;">
+            <i class="fa-solid fa-film"></i> TẢI ẢNH ĐỘNG GIF (LIVE MOTION)
+        </a>
+
+        <a href="index.html" class="btn btn-secondary">
+            <i class="fa-solid fa-house"></i> Chụp Bức Ảnh Mới
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const photoImg = document.getElementById('photo-img');
+            const downloadLink = document.getElementById('download-link');
+            const downloadGifLink = document.getElementById('download-gif-link');
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('error');
+            const metaContainer = document.getElementById('meta-container');
+            const photoDate = document.getElementById('photo-date');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const photoId = urlParams.get('id');
+
+            function showImage(src, dateStr, gifSrc = null) {
+                loading.style.display = 'none';
+                photoImg.src = src;
+                photoImg.style.display = 'block';
+                downloadLink.href = src;
+                downloadLink.download = `Photobooth_${photoId || 'Memory'}.png`;
+
+                if (gifSrc) {
+                    downloadGifLink.href = gifSrc;
+                    downloadGifLink.download = `Photobooth_${photoId || 'Motion'}.gif`;
+                    downloadGifLink.style.display = 'flex';
+                }
+
+                if (dateStr) {
+                    photoDate.textContent = new Date(dateStr).toLocaleString('vi-VN');
+                    metaContainer.style.display = 'flex';
+                }
+            }
+
+            function showError() {
+                loading.style.display = 'none';
+                errorMsg.style.display = 'block';
+                downloadLink.style.display = 'none';
+                downloadGifLink.style.display = 'none';
+            }
+
+            if (photoId) {
+                // 1. Try Fetching Photo API from Backend
+                try {
+                    const res = await fetch(`/api/photos/${photoId}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.photo) {
+                            showImage(data.photo.localPath || data.photo.imageUrl, data.photo.createdAt, data.photo.gifLocalPath || data.photo.gifUrl);
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('API fetch failed, trying direct path or local storage fallback:', e);
+                }
+
+                // 2. Try direct static path `/uploads/<id>.png`
+                const directUrl = `/uploads/${photoId}.png`;
+                const checkImg = new Image();
+                checkImg.onload = () => showImage(directUrl, null, `/uploads/${photoId}.gif`); checkImg.onerror = () => {
+                    // 3. Fallback to LocalStorage
+                    const localData = localStorage.getItem('photobooth_photo_' + photoId) || localStorage.getItem('photobooth_photo_latest');
+                    if (localData) {
+                        showImage(localData);
+                    } else {
+                        showError();
+                    }
+                };
+                checkImg.src = directUrl;
+            } else {
+                // Try latest local photo
+                const latestData = localStorage.getItem('photobooth_photo_latest');
+                if (latestData) {
+                    showImage(latestData);
+                } else {
+                    showError();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

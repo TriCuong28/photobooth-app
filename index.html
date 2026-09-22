@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobooth Tự Động - K-Style Photo Studio</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator & Canvas Confetti -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- External Libraries: Gifshot for Live Motion GIF Encoding -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div id="app" class="app-container">
+
+        <!-- Header / Top Bar -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-camera-retro logo-icon"></i>
+                <span class="logo-text">K-PHOTOBOOTH <small>STUDIO</small></span>
+            </div>
+            <div class="header-controls">
+                <div id="server-status" class="server-badge online" title="Trạng thái máy chủ">
+                    <span class="pulse-dot"></span>
+                    <span id="server-status-text">Server Online</span>
+                </div>
+                <button id="header-gallery-btn" class="icon-btn" title="Thư viện ảnh đã lưu">
+                    <i class="fa-solid fa-images"></i>
+                </button>
+                <button id="fullscreen-btn" class="icon-btn" title="Toàn màn hình">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: WELCOME & SETTINGS -->
+        <section id="screen-welcome" class="screen active">
+            <div class="welcome-card glass-card">
+                <div class="badge"><i class="fa-solid fa-sparkles"></i> Studio Chụp Ảnh Tự Động</div>
+                <h1 class="hero-title">Tạo Kỷ Niệm Photobooth Cực Chất</h1>
+                <p class="hero-subtitle">Chụp chuỗi 4 kiểu ảnh, tùy chọn khung Hàn Quốc, bộ lọc màu thời thượng và tải ngay về điện thoại qua mã QR.</p>
+                
+                <div class="setup-grid">
+                    <!-- Camera Selector -->
+                    <div class="setup-item">
+                        <label for="camera-select"><i class="fa-solid fa-video"></i> Chọn Thiết Bị Camera:</label>
+                        <select id="camera-select" class="custom-select">
+                            <option value="">Đang tìm camera...</option>
+                        </select>
+                    </div>
+
+                    <!-- Countdown Timer -->
+                    <div class="setup-item">
+                        <label><i class="fa-solid fa-stopwatch"></i> Thời Gian Đếm Ngược:</label>
+                        <div class="timer-selector">
+                            <button class="timer-btn" data-time="3">3 Giây</button>
+                            <button class="timer-btn active" data-time="5">5 Giây</button>
+                            <button class="timer-btn" data-time="8">8 Giây</button>
+                        </div>
+                    </div>
+
+                    <!-- Layout Preview Quick Selection -->
+                    <div class="setup-item">
+                        <label><i class="fa-solid fa-table-cells"></i> Kiểu Bố Cục Ảnh:</label>
+                        <div class="layout-quick-select">
+                            <button class="layout-card active" data-shots="4" data-layout="strip">
+                                <div class="layout-icon layout-icon-strip"><span></span><span></span><span></span><span></span></div>
+                                <span>Khung Dọc</span>
+                            </button>
+                            <button class="layout-card" data-shots="4" data-layout="grid2x2">
+                                <div class="layout-icon layout-icon-grid"><span></span><span></span><span></span><span></span></div>
+                                <span>Lưới 4 Khung</span>
+                            </button>
+                            <button class="layout-card" data-shots="6" data-layout="grid3x2">
+                                <div class="layout-icon layout-icon-grid6"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                                <span>Lưới 6 Khung</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button id="start-btn" class="primary-btn glow-btn">
+                        <i class="fa-solid fa-play"></i> BẮT ĐẦU CHỤP ẢNH
+                    </button>
+                    <button id="open-gallery-btn" class="secondary-btn" style="border-radius: 30px; padding: 16px 28px; font-weight: 700;">
+                        <i class="fa-solid fa-images"></i> THƯ VIỆN ẤN PHẨM
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: LIVE CAMERA CAPTURE -->
+        <section id="screen-capture" class="screen">
+            <div class="capture-layout">
+                <!-- Top/Center: Live Camera Viewport -->
+                <div class="viewfinder-container glass-card">
+                    <video id="webcam" autoplay playsinline muted></video>
+                    
+                    <!-- Camera Flash Overlay -->
+                    <div id="flash-overlay" class="flash"></div>
+
+                    <!-- Top Right Frosted Glass Countdown Overlay Badge -->
+                    <div id="countdown-overlay" class="countdown-display hidden">
+                        <i class="fa-solid fa-stopwatch countdown-icon"></i>
+                        <span id="countdown-number">3</span>
+                    </div>
+
+                    <!-- Floating Quick Snap Trigger Button -->
+                    <button id="quick-snap-btn" class="quick-snap-floating-btn" title="Bấm chụp ngay tức thì không cần chờ đếm ngược">
+                        <i class="fa-solid fa-bolt"></i> 📸 Chụp Ngay Tức Thì
+                    </button>
+
+                    <!-- Pose Hint / Status Bar -->
+                    <div class="capture-status-bar">
+                        <span id="shot-counter-text"><i class="fa-solid fa-camera"></i> Kiểu 1 / 8</span>
+                        <div class="pose-hint" id="pose-hint-text">Hãy mỉm cười thật tươi! 😁</div>
+                    </div>
+                </div>
+
+                <!-- Bottom: Horizontal Captured Thumbnails Bar (8 Slots) -->
+                <div class="shots-bottom-bar glass-card">
+                    <div class="shots-bar-header">
+                        <span class="shots-title"><i class="fa-solid fa-images"></i> 8 Kiểu Ảnh Studio</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button id="quick-snap-bar-btn" class="primary-btn small-btn" style="padding: 6px 14px; font-size: 12px; background: linear-gradient(135deg, #ff5e97, #ff2a75); border: none;">
+                                <i class="fa-solid fa-bolt"></i> Chụp Ngay
+                            </button>
+                            <button id="cancel-capture-btn" class="secondary-btn small-btn" style="padding: 6px 14px; font-size: 12px;">
+                                <i class="fa-solid fa-rotate-left"></i> Hủy & Thử Lại
+                            </button>
+                        </div>
+                    </div>
+                    <div id="thumbnails-list" class="thumbnails-container-horizontal">
+                        <!-- 8 Thumbnails injected dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2.5: PHOTO SELECTION GRID (CHỌN ÁNH ĐẸP NHẤT & XEM TRƯỚC TỪNG Ô) -->
+        <section id="screen-select-photos" class="screen">
+            <div class="selection-card glass-card">
+                <div class="selection-header">
+                    <h2><i class="fa-solid fa-check-double"></i> Chọn Những Tấm Ảnh Đẹp Nhất</h2>
+                    <p>Hệ thống đã chụp trọn bộ 8 kiểu ảnh! Hãy bấm chọn các bức ảnh bạn thích nhất để điền vào từng ô khung ảnh.</p>
+                    <div id="selection-counter-badge" class="selection-status-badge">
+                        <i class="fa-solid fa-heart"></i> <span id="selection-counter-text">Đã chọn 0 / 4 tấm</span>
+                    </div>
+                </div>
+
+                <div class="selection-body-container">
+                    <!-- Left: 8 Captured Photos -->
+                    <div class="selection-photos-side">
+                        <h4 class="selection-side-title"><i class="fa-solid fa-images"></i> 8 Kiểu Ảnh Vừa Chụp (Click để chọn/đổi)</h4>
+                        <div id="selection-grid" class="selection-grid">
+                            <!-- 8 captured photos injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Live Frame Slot Preview (Preview Từng Ô & Khung Thật) -->
+                    <div class="selection-preview-side">
+                        <h4 class="selection-side-title" style="justify-content: space-between;">
+                            <span><i class="fa-solid fa-table-cells"></i> Xem Trước Khung Ảnh Trực Tiếp</span>
+                            <small style="color: var(--accent-pink); font-size: 11px; font-weight: 600; cursor: pointer;" id="zoom-preview-hint"><i class="fa-solid fa-magnifying-glass-plus"></i> Bấm ảnh để phóng to</small>
+                        </h4>
+                        <div id="selection-frame-preview" class="selection-frame-preview-box">
+                            <canvas id="selection-mini-canvas" title="Bấm vào để phóng to xem chi tiết khổng lồ"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-bar" style="width: 100%; margin-top: 16px; justify-content: center; gap: 16px;">
+                    <button id="re-take-photos-btn" class="secondary-btn" style="border-radius: 30px; padding: 14px 28px; font-weight: 700;">
+                        <i class="fa-solid fa-camera"></i> Chụp Lại Bộ Ảnh (8 Tấm)
+                    </button>
+                    <button id="confirm-photo-selection-btn" class="primary-btn glow-btn" disabled>
+                        <i class="fa-solid fa-arrow-right"></i> TIẾP TỤC CHỈNH SỬA KHUNG
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: CUSTOMIZE & EDIT STUDIO -->
+        <section id="screen-edit" class="screen">
+            <div class="editor-layout">
+                <!-- Left Panel: Canvas Live Preview -->
+                <div class="preview-container glass-card">
+                    <div class="canvas-wrapper">
+                        <canvas id="photobooth-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Editing Tools Sidebar -->
+                <div class="editor-sidebar glass-card">
+                    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Trang Trí Khung Ảnh</h2>
+                    
+                    <!-- Tab Headers -->
+                    <div class="tab-headers">
+                        <button class="tab-btn active" data-tab="tab-frame"><i class="fa-solid fa-border-all"></i> Khung & Màu</button>
+                        <button class="tab-btn" data-tab="tab-filter"><i class="fa-solid fa-sliders"></i> Bộ Lọc</button>
+                        <button class="tab-btn" data-tab="tab-text"><i class="fa-solid fa-font"></i> Chữ & Tem</button>
+                        <button class="tab-btn" data-tab="tab-sticker"><i class="fa-solid fa-icons"></i> Sticker</button>
+                    </div>
+
+                    <!-- Tab Content 1: Frame Style & Colors -->
+                    <div id="tab-frame" class="tab-content active">
+                        <label><i class="fa-solid fa-wand-magic-sparkles"></i> Mẫu Khung Ảnh Xem Trước (Click chọn mẫu):</label>
+                        <div class="frame-preset-grid">
+                            <!-- Boy & Cool Styles -->
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="coolboy">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); position: relative;">
+                                    <span class="preview-emoji-badge left">💙</span>
+                                    <span class="preview-emoji-badge right">🌊</span>
+                                    <div class="mini-slot" style="background: rgba(255,255,255,0.9);"></div>
+                                    <div class="mini-slot" style="background: rgba(255,255,255,0.9);"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Cool Boy Blue 💙</span>
+                                    <span class="frame-card-subtitle">Ocean & Sport Blue</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="gaming">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #09090b, #18181b); border: 1px solid #10b981; position: relative;">
+                                    <span class="preview-emoji-badge left">🎮</span>
+                                    <span class="preview-emoji-badge right">⚡</span>
+                                    <div class="mini-slot" style="background: #27272a; border: 1px solid #10b981;"></div>
+                                    <div class="mini-slot" style="background: #27272a; border: 1px solid #10b981;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Cyber Gaming 🎮</span>
+                                    <span class="frame-card-subtitle">Neon Dark Cyber</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="racing">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #1f2937, #111827); border: 1px solid #ef4444; position: relative;">
+                                    <span class="preview-emoji-badge left">🏎️</span>
+                                    <span class="preview-emoji-badge right">🏁</span>
+                                    <div class="mini-slot" style="background: #374151;"></div>
+                                    <div class="mini-slot" style="background: #374151;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Speed Racing 🏎️</span>
+                                    <span class="frame-card-subtitle">Carbon Speed Metal</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="denim">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #1e293b, #334155); position: relative;">
+                                    <span class="preview-emoji-badge left">🧢</span>
+                                    <span class="preview-emoji-badge right">👖</span>
+                                    <div class="mini-slot" style="background: #f1f5f9;"></div>
+                                    <div class="mini-slot" style="background: #f1f5f9;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Vintage Denim 🧢</span>
+                                    <span class="frame-card-subtitle">Navy Streetwear</span>
+                                </div>
+                            </div>
+
+                            <!-- Cute & Fancy Girly Styles -->
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="kitty">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #ffc6d9, #ffabe1); position: relative;">
+                                    <span class="preview-emoji-badge left">🐱</span>
+                                    <span class="preview-emoji-badge right">🍓</span>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Kawaii Kitty 🐱</span>
+                                    <span class="frame-card-subtitle">Mèo Cute & Dâu 🍓</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="teddy">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #f3d5b5, #e7bc91); position: relative;">
+                                    <span class="preview-emoji-badge left">🧸</span>
+                                    <span class="preview-emoji-badge right">🍯</span>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Pastel Teddy 🧸</span>
+                                    <span class="frame-card-subtitle">Gấu Bông & Mật 🍯</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="starry">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #311b92, #4a148c); position: relative;">
+                                    <span class="preview-emoji-badge left">🌙</span>
+                                    <span class="preview-emoji-badge right">🌟</span>
+                                    <div class="mini-slot" style="background: rgba(255,255,255,0.9);"></div>
+                                    <div class="mini-slot" style="background: rgba(255,255,255,0.9);"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Starry Dream 🌟</span>
+                                    <span class="frame-card-subtitle">Vũ Trụ Mộng Mơ</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="sakura">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #ffe5ec, #ffcad4); position: relative;">
+                                    <span class="preview-emoji-badge left">🌸</span>
+                                    <span class="preview-emoji-badge right">🌺</span>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Sakura Pink 🌸</span>
+                                    <span class="frame-card-subtitle">Hoa Anh Đào Soft</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="ribbon">
+                                <div class="frame-card-preview" style="background: linear-gradient(135deg, #fbe7f1, #e8d5e5); position: relative; border: 1px solid #ffb6c1;">
+                                    <span class="preview-emoji-badge left">🎀</span>
+                                    <span class="preview-emoji-badge right">💖</span>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                    <div class="mini-slot" style="background: #fff;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Coquette Ribbon 🎀</span>
+                                    <span class="frame-card-subtitle">Nơ Hồng Công Chúa</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="korean">
+                                <div class="frame-card-preview" style="background: #f7f4ef; border: 1px solid #e2e8f0;">
+                                    <div class="mini-slot" style="background: #fff; border: 1px solid #cbd5e1;"></div>
+                                    <div class="mini-slot" style="background: #fff; border: 1px solid #cbd5e1;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Korean Soft 🇰🇷</span>
+                                    <span class="frame-card-subtitle">Pastel Seoul Studio</span>
+                                </div>
+                            </div>
+
+                            <!-- Classic & Film -->
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="film">
+                                <div class="frame-card-preview" style="background: #08080a; padding-left: 8px; padding-right: 8px; position: relative;">
+                                    <div style="position: absolute; left: 2px; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(#fff 0, #fff 4px, transparent 4px, transparent 8px);"></div>
+                                    <div style="position: absolute; right: 2px; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(#fff 0, #fff 4px, transparent 4px, transparent 8px);"></div>
+                                    <div class="mini-slot" style="background: #333;"></div>
+                                    <div class="mini-slot" style="background: #333;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Retro 35mm Film 📼</span>
+                                    <span class="frame-card-subtitle">Cuộn Phim Analog</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn" data-framestyle="polaroid">
+                                <div class="frame-card-preview" style="background: #ffffff; padding-bottom: 12px; border: 1px solid #ccc;">
+                                    <div class="mini-slot" style="background: #cbd5e1;"></div>
+                                    <div class="mini-slot" style="background: #94a3b8;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Polaroid Memory 📸</span>
+                                    <span class="frame-card-subtitle">Chú Thích Bottom</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-preset-card frame-style-btn active" data-framestyle="classic">
+                                <div class="frame-card-preview" style="background: #ffffff; border: 1px solid #ddd;">
+                                    <div class="mini-slot" style="background: #e2e8f0;"></div>
+                                    <div class="mini-slot" style="background: #cbd5e1;"></div>
+                                </div>
+                                <div class="frame-card-info">
+                                    <span class="frame-card-title">Classic Studio 🤍</span>
+                                    <span class="frame-card-subtitle">Trắng Tinh Khôi</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label style="margin-top: 15px;"><i class="fa-solid fa-palette"></i> Màu Nền Khung Đơn Sắc:</label>
+                        <div class="color-palette">
+                            <button class="color-dot active" data-color="#ffffff" style="background: #ffffff;" title="Trắng Tinh Khôi"></button>
+                            <button class="color-dot" data-color="#121212" style="background: #121212;" title="Đen Sang Trọng"></button>
+                            <button class="color-dot" data-color="#1e293b" style="background: #1e293b;" title="Navy Nam Tính 💙"></button>
+                            <button class="color-dot" data-color="#2563eb" style="background: #2563eb;" title="Xanh Royal Blue 💙"></button>
+                            <button class="color-dot" data-color="#ffb6c1" style="background: #ffb6c1;" title="Hồng Pastel 🌸"></button>
+                            <button class="color-dot" data-color="#a0c4ff" style="background: #a0c4ff;" title="Xanh Sky"></button>
+                            <button class="color-dot" data-color="#caffbf" style="background: #caffbf;" title="Xanh Mint"></button>
+                            <button class="color-dot" data-color="#fdffb6" style="background: #fdffb6;" title="Vàng Butter"></button>
+                            <button class="color-dot" data-color="#e0aaff" style="background: #e0aaff;" title="Tím Lavender"></button>
+                            <label class="custom-color-wrapper" title="Chọn màu tùy chỉnh">
+                                <input type="color" id="custom-frame-color" value="#ffffff">
+                                <i class="fa-solid fa-eye-dropper"></i>
+                            </label>
+                        </div>
+
+                        <label style="margin-top: 15px;"><i class="fa-solid fa-gradient"></i> Màu Nền Gradient (Cho Nam & Nữ):</label>
+                        <div class="gradient-palette">
+                            <button class="gradient-dot" data-grad="#1e3a8a,#3b82f6" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);" title="Cool Boy Blue 💙"></button>
+                            <button class="gradient-dot" data-grad="#0f172a,#10b981" style="background: linear-gradient(135deg, #0f172a, #10b981);" title="Cyber Neon 🎮"></button>
+                            <button class="gradient-dot" data-grad="#1f2937,#ef4444" style="background: linear-gradient(135deg, #1f2937, #ef4444);" title="Racing Carbon 🏎️"></button>
+                            <button class="gradient-dot" data-grad="#ff9a9e,#fecfef" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);" title="Pink Soft 🌸"></button>
+                            <button class="gradient-dot" data-grad="#8ec5fc,#e0c3fc" style="background: linear-gradient(135deg, #8ec5fc, #e0c3fc);" title="Cyber Lavender"></button>
+                            <button class="gradient-dot" data-grad="#fbc2eb,#a6c1ee" style="background: linear-gradient(135deg, #fbc2eb, #a6c1ee);" title="Pastel Purple"></button>
+                            <button class="gradient-dot" data-grad="#84fab0,#8fd3f4" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);" title="Mint Glow"></button>
+                            <button class="gradient-dot" data-grad="#f6d365,#fda085" style="background: linear-gradient(135deg, #f6d365, #fda085);" title="Sunset Peach"></button>
+                            <button class="gradient-dot" data-grad="#232526,#414345" style="background: linear-gradient(135deg, #232526, #414345);" title="Noir Dark"></button>
+                        </div>
+
+                        <label style="margin-top: 15px;">Độ Dày Viền Khung:</label>
+                        <input type="range" id="frame-padding-slider" min="10" max="40" value="20" class="custom-slider">
+                    </div>
+
+                    <!-- Tab Content 2: Photo Filters -->
+                    <div id="tab-filter" class="tab-content">
+                        <label>Bộ Lọc Màu Ảnh (Apply All):</label>
+                        <div class="filter-grid">
+                            <button class="filter-card active" data-filter="normal">
+                                <div class="filter-preview filter-normal"></div>
+                                <span>Gốc (Normal)</span>
+                            </button>
+                            <button class="filter-card" data-filter="bw">
+                                <div class="filter-preview filter-bw"></div>
+                                <span>Đen Trắng</span>
+                            </button>
+                            <button class="filter-card" data-filter="vintage">
+                                <div class="filter-preview filter-vintage"></div>
+                                <span>Vintage Film</span>
+                            </button>
+                            <button class="filter-card" data-filter="warm">
+                                <div class="filter-preview filter-warm"></div>
+                                <span>Soft Warm</span>
+                            </button>
+                            <button class="filter-card" data-filter="cool">
+                                <div class="filter-preview filter-cool"></div>
+                                <span>Cyber Cool</span>
+                            </button>
+                            <button class="filter-card" data-filter="bright">
+                                <div class="filter-preview filter-bright"></div>
+                                <span>Glow Bright</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content 3: Text & Timestamp -->
+                    <div id="tab-text" class="tab-content">
+                        <label for="frame-title-input">Chữ Tiêu Đề Khung Ảnh:</label>
+                        <input type="text" id="frame-title-input" value="K-PHOTOBOOTH MEMORY" placeholder="Nhập tiêu đề..." class="custom-input">
+
+                        <label for="frame-date-input" style="margin-top: 12px;">Ngày Chụp / Dấu Thời Gian:</label>
+                        <input type="text" id="frame-date-input" value="" placeholder="DD/MM/YYYY" class="custom-input">
+
+                        <label style="margin-top: 12px;">Màu Chữ Khung:</label>
+                        <div class="text-color-palette">
+                            <button class="text-color-dot active" data-textcolor="#111111" style="background: #111111;"></button>
+                            <button class="text-color-dot" data-textcolor="#ffffff" style="background: #ffffff;"></button>
+                            <button class="text-color-dot" data-textcolor="#ff4757" style="background: #ff4757;"></button>
+                            <button class="text-color-dot" data-textcolor="#2e86de" style="background: #2e86de;"></button>
+                            <button class="text-color-dot" data-textcolor="#f368e0" style="background: #f368e0;"></button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content 4: Stickers -->
+                    <div id="tab-sticker" class="tab-content">
+                        <label><i class="fa-solid fa-face-smile"></i> Thêm Sticker Dễ Thương (Kéo rê trên khung):</label>
+                        <div class="sticker-selector">
+                            <button class="sticker-item" data-emoji="❤️">❤️</button>
+                            <button class="sticker-item" data-emoji="✨">✨</button>
+                            <button class="sticker-item" data-emoji="👑">👑</button>
+                            <button class="sticker-item" data-emoji="🎀">🎀</button>
+                            <button class="sticker-item" data-emoji="🐱">🐱</button>
+                            <button class="sticker-item" data-emoji="🕶️">🕶️</button>
+                            <button class="sticker-item" data-emoji="🌸">🌸</button>
+                            <button class="sticker-item" data-emoji="🔥">🔥</button>
+                            <button class="sticker-item" data-emoji="📸">📸</button>
+                            <button class="sticker-item" data-emoji="✌️">✌️</button>
+                            <button class="sticker-item" data-emoji="🧸">🧸</button>
+                            <button class="sticker-item" data-emoji="🍓">🍓</button>
+                            <button class="sticker-item" data-emoji="🍦">🍦</button>
+                            <button class="sticker-item" data-emoji="🎵">🎵</button>
+                        </div>
+
+                        <!-- Custom Emoji Input -->
+                        <div class="custom-emoji-box" style="display: flex; gap: 8px; margin-top: 10px;">
+                            <input type="text" id="custom-emoji-input" placeholder="Gõ emoji tùy thích (vd: 🦄)..." class="custom-input" style="padding: 8px 12px; font-size: 13px;">
+                            <button id="add-custom-emoji-btn" class="secondary-btn" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">Thêm Emoji</button>
+                        </div>
+
+                        <!-- Selected Sticker Controls -->
+                        <div class="selected-sticker-controls" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <label><i class="fa-solid fa-sliders"></i> Chỉnh Sticker Đang Chọn:</label>
+                            <div class="slider-group" style="margin-top: 6px;">
+                                <small style="color: #94a3b8; font-size: 11px;">Kích thước (Scale):</small>
+                                <input type="range" id="sticker-scale-slider" min="0.5" max="3.0" step="0.1" value="1.0" class="custom-slider">
+                            </div>
+                            <div class="slider-group" style="margin-top: 6px;">
+                                <small style="color: #94a3b8; font-size: 11px;">Góc xoay (Rotate):</small>
+                                <input type="range" id="sticker-rotate-slider" min="-180" max="180" value="0" class="custom-slider">
+                            </div>
+                            <div class="sticker-btn-actions" style="display: flex; gap: 8px; margin-top: 12px;">
+                                <button id="delete-selected-sticker-btn" class="secondary-btn small-btn" disabled style="flex: 1; color: #ff4757;">
+                                    <i class="fa-solid fa-trash"></i> Xóa Chọn
+                                </button>
+                                <button id="clear-stickers-btn" class="secondary-btn small-btn" style="flex: 1;">
+                                    <i class="fa-solid fa-broom"></i> Xóa Hết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-actions">
+                        <button id="retake-all-btn" class="secondary-btn">
+                            <i class="fa-solid fa-camera"></i> Chụp Lại
+                        </button>
+                        <button id="finish-edit-btn" class="primary-btn glow-btn">
+                            <i class="fa-solid fa-check"></i> HOÀN THÀNH & XUẤT ẢNH
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: FINALIZE & PRINT/SHARE -->
+        <section id="screen-result" class="screen">
+            <div class="result-card glass-card">
+                <div class="result-header">
+                    <h2><i class="fa-solid fa-circle-check"></i> Ảnh Của Bạn Đã Sẵn Sàng!</h2>
+                    <p>Quét mã QR bằng điện thoại để tải ảnh hoặc bấm In trực tiếp bên dưới.</p>
+                </div>
+
+                <div class="result-grid">
+                    <!-- Final Photo Preview -->
+                    <div class="final-photo-container">
+                        <img id="final-image-preview" src="" alt="Photobooth Result">
+                    </div>
+
+                    <!-- Share & Download Options -->
+                    <div class="share-options-container">
+                        <!-- QR Code Container -->
+                        <div class="qr-box">
+                            <h3><i class="fa-solid fa-qrcode"></i> Quét QR Tải Ảnh Về Điện Thoại</h3>
+                            <div id="qrcode-canvas" class="qrcode-wrapper"></div>
+                            <small id="upload-status-notice"><i class="fa-solid fa-cloud-check"></i> Ảnh đã được lưu trữ trên server máy chủ</small>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="download-actions">
+                            <button id="download-btn" class="action-btn download-btn">
+                                <i class="fa-solid fa-download"></i> TẢI FILE ẢNH (PNG HD)
+                            </button>
+                            <button id="download-gif-btn" class="action-btn gif-btn" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fa-solid fa-film"></i> TẢI GIF MOTION PHOTOBOOTH 🎬
+                            </button>
+                            <button id="print-btn" class="action-btn print-btn">
+                                <i class="fa-solid fa-print"></i> IN ẢNH NGAY (2x6" / 4x6")
+                            </button>
+                            <button id="new-session-btn" class="action-btn new-btn">
+                                <i class="fa-solid fa-rotate"></i> CHỤP LƯỢT MỚI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Printable Area Hidden Component (Optimized for Print Drivers) -->
+    <div id="print-container" class="print-only">
+        <img id="printable-image" src="" alt="Printable Photo Strip">
+    </div>
+
+    <!-- Gallery Modal Overlay -->
+    <div id="gallery-modal" class="modal-overlay">
+        <div class="modal-container glass-card" style="max-width: 1050px; width: 92%;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-images"></i> Thư Viện Ảnh Đã Chụp Server</h2>
+                <button id="close-gallery-btn" class="close-btn">&times;</button>
+            </div>
+
+            <!-- Gallery Toolbar: Batch Selection & Bulk Actions -->
+            <div class="gallery-toolbar">
+                <div class="gallery-toolbar-left">
+                    <label class="gallery-select-all-label">
+                        <input type="checkbox" id="gallery-select-all-cb">
+                        <span class="custom-cb-box"><i class="fa-solid fa-check"></i></span>
+                        <span>Chọn Tất Cả (<strong id="gallery-total-count">0</strong>)</span>
+                    </label>
+                    <span id="gallery-selected-badge" class="gallery-selected-badge">
+                        <i class="fa-solid fa-check-double"></i> Đã chọn <strong id="gallery-selected-count">0</strong> ảnh
+                    </span>
+                </div>
+                <div class="gallery-toolbar-right">
+                    <button id="delete-selected-gallery-btn" class="gallery-action-btn btn-danger-soft" disabled>
+                        <i class="fa-solid fa-trash-can"></i> Xóa Đã Chọn (<span id="gallery-delete-selected-count">0</span>)
+                    </button>
+                    <button id="delete-all-gallery-btn" class="gallery-action-btn btn-danger-solid">
+                        <i class="fa-solid fa-fire-flame-curved"></i> Xóa Tất Cả
+                    </button>
+                </div>
+            </div>
+
+            <div id="gallery-grid" class="gallery-grid">
+                <div class="gallery-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Photobooth App Script -->
+    <script src="app.js"></script>
+</body>
+</html>

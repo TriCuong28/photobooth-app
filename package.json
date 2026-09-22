@@ -1,0 +1,23 @@
+{
+  "name": "k-photobooth-app",
+  "version": "1.0.0",
+  "description": "K-Style Automated Photobooth Application with Node.js Express Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "photobooth",
+    "express",
+    "javascript",
+    "camera",
+    "canvas"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

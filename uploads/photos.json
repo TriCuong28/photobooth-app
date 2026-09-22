@@ -1,0 +1,129 @@
+[
+  {
+    "id": "photo_1790085100603_4rotca",
+    "fileName": "photo_1790085100603_4rotca.png",
+    "gifFileName": "photo_1790085100603_4rotca.gif",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790085100603_4rotca.png",
+    "gifUrl": "http://localhost:3000/uploads/photo_1790085100603_4rotca.gif",
+    "localPath": "/uploads/photo_1790085100603_4rotca.png",
+    "gifLocalPath": "/uploads/photo_1790085100603_4rotca.gif",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790085100603_4rotca",
+    "layoutType": "strip",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T13:51:40.618Z",
+    "sizeBytes": 2755846
+  },
+  {
+    "id": "photo_1790083912666_kv3pl7",
+    "fileName": "photo_1790083912666_kv3pl7.png",
+    "gifFileName": "photo_1790083912666_kv3pl7.gif",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790083912666_kv3pl7.png",
+    "gifUrl": "http://localhost:3000/uploads/photo_1790083912666_kv3pl7.gif",
+    "localPath": "/uploads/photo_1790083912666_kv3pl7.png",
+    "gifLocalPath": "/uploads/photo_1790083912666_kv3pl7.gif",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790083912666_kv3pl7",
+    "layoutType": "strip",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T13:31:52.675Z",
+    "sizeBytes": 1148455
+  },
+  {
+    "id": "photo_1790075830103_58upu2",
+    "fileName": "photo_1790075830103_58upu2.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790075830103_58upu2.png",
+    "localPath": "/uploads/photo_1790075830103_58upu2.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790075830103_58upu2",
+    "layoutType": "grid2x2",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T11:17:10.110Z",
+    "sizeBytes": 1746763
+  },
+  {
+    "id": "photo_1790075662022_xw6w36",
+    "fileName": "photo_1790075662022_xw6w36.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790075662022_xw6w36.png",
+    "localPath": "/uploads/photo_1790075662022_xw6w36.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790075662022_xw6w36",
+    "layoutType": "grid2x2",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T11:14:22.040Z",
+    "sizeBytes": 1638209
+  },
+  {
+    "id": "photo_1790075591789_8s9n1u",
+    "fileName": "photo_1790075591789_8s9n1u.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790075591789_8s9n1u.png",
+    "localPath": "/uploads/photo_1790075591789_8s9n1u.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790075591789_8s9n1u",
+    "layoutType": "strip",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T11:13:11.796Z",
+    "sizeBytes": 1077606
+  },
+  {
+    "id": "photo_1790071661498_or40s6",
+    "fileName": "photo_1790071661498_or40s6.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790071661498_or40s6.png",
+    "localPath": "/uploads/photo_1790071661498_or40s6.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790071661498_or40s6",
+    "layoutType": "strip",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T10:07:41.504Z",
+    "sizeBytes": 2326211
+  },
+  {
+    "id": "photo_1790070322135_aicz9k",
+    "fileName": "photo_1790070322135_aicz9k.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790070322135_aicz9k.png",
+    "localPath": "/uploads/photo_1790070322135_aicz9k.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790070322135_aicz9k",
+    "layoutType": "grid2x2",
+    "frameTitle": "Snoopy X iPhone 16 Pro Max",
+    "createdAt": "2026-09-22T09:45:22.146Z",
+    "sizeBytes": 2720872
+  },
+  {
+    "id": "photo_1790069694425_vsqj0v",
+    "fileName": "photo_1790069694425_vsqj0v.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790069694425_vsqj0v.png",
+    "localPath": "/uploads/photo_1790069694425_vsqj0v.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790069694425_vsqj0v",
+    "layoutType": "grid2x2",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T09:34:54.430Z",
+    "sizeBytes": 1709387
+  },
+  {
+    "id": "photo_1790068594854_opgypb",
+    "fileName": "photo_1790068594854_opgypb.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790068594854_opgypb.png",
+    "localPath": "/uploads/photo_1790068594854_opgypb.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790068594854_opgypb",
+    "layoutType": "grid2x2",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T09:16:34.860Z",
+    "sizeBytes": 1416083
+  },
+  {
+    "id": "photo_1790066209549_jcjc7a",
+    "fileName": "photo_1790066209549_jcjc7a.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790066209549_jcjc7a.png",
+    "localPath": "/uploads/photo_1790066209549_jcjc7a.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790066209549_jcjc7a",
+    "layoutType": "strip",
+    "frameTitle": "MODULAR TEST",
+    "createdAt": "2026-09-22T08:36:49.550Z",
+    "sizeBytes": 70
+  },
+  {
+    "id": "photo_1790064859039_jfpu4k",
+    "fileName": "photo_1790064859039_jfpu4k.png",
+    "imageUrl": "http://localhost:3000/uploads/photo_1790064859039_jfpu4k.png",
+    "localPath": "/uploads/photo_1790064859039_jfpu4k.png",
+    "shareUrl": "http://192.168.1.95:3000/view.html?id=photo_1790064859039_jfpu4k",
+    "layoutType": "grid2x2",
+    "frameTitle": "K-PHOTOBOOTH MEMORY",
+    "createdAt": "2026-09-22T08:14:19.044Z",
+    "sizeBytes": 2449843
+  }
+]
